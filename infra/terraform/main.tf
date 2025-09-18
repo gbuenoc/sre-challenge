@@ -12,8 +12,8 @@ module "eks" {
   source             = "./modules/eks"
   environment        = var.environment
   kubernetes_version = var.kubernetes_version
-  vpc_id             = var.vpc_id
-  private_subnet_ids = var.private_subnet_ids
+  vpc_id             = data.aws_vpc.env_vpc.id
+  private_subnet_ids = data.aws_subnets.private_subnet.ids
 }
 
 module "ecr" {
