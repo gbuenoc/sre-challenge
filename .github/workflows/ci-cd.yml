@@ -21,6 +21,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
+  TERRAFORM_ENV: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
   CHART_PATH: ./infra/helm-charts/app-chart
   IMAGE_TAG: 1.0.0
 
@@ -48,13 +49,11 @@ jobs:
 
       - name: Terraform Init
         working-directory: ./infra/terraform
-        run: terraform init \
-          -backend-config=./environments/${{ github.event.inputs.environment }}/backend.tfbackend
+        run: terraform init -backend-config=./environments/${{ env.TERRAFORM_ENV }}/backend.tfbackend
 
       - name: Terraform Apply
         working-directory: ./infra/terraform
-        run: terraform apply \
-          -var-file=./environments/${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars
+        run: terraform apply -var-file=./environments/${{ env.TERRAFORM_ENV }}/${{ env.TERRAFORM_ENV }}.tfvars -auto-approve
 
       - name: Get Terraform outputs (ECR)
         id: outputs_ecr
