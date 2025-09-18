@@ -48,11 +48,13 @@ jobs:
 
       - name: Terraform Init
         working-directory: ./infra/terraform
-        run: terraform init -backend-config=./environments/${{ github.event.inputs.environment }}/backend.tfbackend
+        run: terraform init \
+          -backend-config=./environments/${{ github.event.inputs.environment }}/backend.tfbackend
 
       - name: Terraform Apply
         working-directory: ./infra/terraform
-        run: terraform apply -var-file=./environments/${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars
+        run: terraform apply \
+          -var-file=./environments/${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars
 
       - name: Get Terraform outputs (ECR)
         id: outputs_ecr
