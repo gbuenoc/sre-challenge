@@ -48,15 +48,15 @@ jobs:
 
       - name: Terraform Init
         working-directory: ./infra/terraform
-        run: terraform init
+        run: terraform init -backend-config=./environments/${{ github.event.inputs.environment }}/backend.tfbackend
 
       - name: Terraform Apply
         working-directory: ./infra/terraform
-        run: terraform apply -var-file=./environments/${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars -auto-approve
+        run: terraform apply -var-file=./environments/${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars
 
       - name: Get Terraform outputs (ECR)
         id: outputs_ecr
-        working-directory: ./infra/terraform/environments/${{ github.event.inputs.environment }}
+        working-directory: ./infra/terraform
         run: |
           echo "ecr_backend_url=$(terraform output -raw ecr_backend_url)" >> $GITHUB_OUTPUT
           echo "ecr_frontend_url=$(terraform output -raw ecr_frontend_url)" >> $GITHUB_OUTPUT
