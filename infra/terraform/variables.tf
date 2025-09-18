@@ -51,16 +51,6 @@ variable "enable_cluster_creator_admin_permissions" {
   default     = true
 }
 
-variable "vpc_id" {
-  description = "VPC ID where the EKS cluster will be deployed"
-  type        = string
-}
-
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs for EKS control plane and workloads"
-  type        = list(string)
-}
-
 variable "repositories" {
   description = "Lista de nomes de repositórios ECR"
   type        = list(string)
