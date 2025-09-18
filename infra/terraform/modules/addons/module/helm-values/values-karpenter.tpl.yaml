@@ -1,0 +1,20 @@
+serviceAccount:
+  name: karpenter-sa
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::${account_id}:role/${controller_role_name}
+
+settings:
+  clusterName: ${cluster_name}
+  clusterEndpoint: ${cluster_endpoint}
+  interruptionQueue: ${cluster_name}
+
+replicas: 2
+
+controller:
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"

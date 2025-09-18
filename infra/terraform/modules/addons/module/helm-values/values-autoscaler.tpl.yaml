@@ -1,0 +1,16 @@
+awsRegion: ${region}
+
+autoDiscovery:
+  clusterName: ${cluster_name}
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "300Mi"
+
+rbac:
+  serviceAccount:
+    create: false
+    name: cluster-autoscaler-terraform

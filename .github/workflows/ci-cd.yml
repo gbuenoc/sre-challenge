@@ -1,0 +1,138 @@
+name: sre-challenge-pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Escolha o ambiente'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  CHART_PATH: ./infra/helm-charts/app-chart
+  IMAGE_TAG: 1.0.0
+
+jobs:
+  infra:
+    name: Provision Infra with Terraform
+    runs-on: ubuntu-latest
+    outputs:
+      ecr_backend_url: ${{ steps.outputs_ecr.outputs.ecr_backend_url }}
+      ecr_frontend_url: ${{ steps.outputs_ecr.outputs.ecr_frontend_url }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::344590080430:role/github-actions-deployer
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.7
+
+      - name: Terraform Init
+        working-directory: ./infra/terraform/environments/${{ github.event.inputs.environment }}
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./infra/terraform/environments/${{ github.event.inputs.environment }}
+        run: terraform apply -auto-approve
+
+      - name: Get Terraform outputs (ECR)
+        id: outputs_ecr
+        working-directory: ./infra/terraform/environments/${{ github.event.inputs.environment }}
+        run: |
+          echo "ecr_backend_url=$(terraform output -raw ecr_backend_url)" >> $GITHUB_OUTPUT
+          echo "ecr_frontend_url=$(terraform output -raw ecr_frontend_url)" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: infra
+    outputs:
+      backend_image: ${{ steps.backend_image.outputs.full_image }}
+      frontend_image: ${{ steps.frontend_image.outputs.full_image }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/github-actions-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push Backend
+        id: backend_image
+        run: |
+          docker build -t ${{ needs.infra.outputs.ecr_backend_url }}:${{ env.IMAGE_TAG }} ./apps/backend
+          docker push ${{ needs.infra.outputs.ecr_backend_url }}:${{ env.IMAGE_TAG }}
+          echo "full_image=${{ needs.infra.outputs.ecr_backend_url }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+
+      - name: Build & Push Frontend
+        id: frontend_image
+        run: |
+          docker build -t ${{ needs.infra.outputs.ecr_frontend_url }}:${{ env.IMAGE_TAG }} ./apps/frontend
+          docker push ${{ needs.infra.outputs.ecr_frontend_url }}:${{ env.IMAGE_TAG }}
+          echo "full_image=${{ needs.infra.outputs.ecr_frontend_url }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to EKS via Helm
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/github-actions-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.33.0
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.18.0
+
+      - name: Set EKS cluster name
+        run: echo "EKS_CLUSTER_NAME=eks-${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
+
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install sre-app ${{ env.CHART_PATH }} \
+            --namespace sre-challenge-${{ github.event.inputs.environment }} --create-namespace \
+            --set backend.image.repository=${{ needs.build.outputs.backend_image }} \
+            --set backend.image.tag=${{ env.IMAGE_TAG }} \
+            --set frontend.image.repository=${{ needs.build.outputs.frontend_image }} \
+            --set frontend.image.tag=${{ env.IMAGE_TAG }} \
+            --wait --timeout 60s

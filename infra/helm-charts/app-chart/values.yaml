@@ -1,0 +1,17 @@
+ingress:
+  host: "meudominio.com"
+
+backend:
+  replicas: 2
+  image:
+    repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/foxbit-backend
+    tag: latest
+  port: 8080
+  serviceAccount: backend-sa
+
+frontend:
+  replicas: 1
+  image:
+    repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/foxbit-frontend
+    tag: latest
+  port: 80
