@@ -1,8 +1,13 @@
 module "eks_core_apps" {
-  source       = "./module"
-  region       = var.region
-  cluster_name = "eks-${var.environment}"
-
+  source                 = "./module"
+  region                 = var.region
+  cluster_name           = "eks-${var.environment}"
+  cluster_endpoint       = var.cluster_endpoint
+  cluster_oidc           = var.cluster_oidc
+  node_security_group_id = var.node_security_group_id
+  vpc_id                 = var.vpc_id
+  private_subnet_ids     = var.private_subnet_ids
+  azs                    = var.azs
 
   # kube_proxy - https://docs.aws.amazon.com/pt_br/eks/latest/userguide/managing-kube-proxy.html
   kube_proxy_enable  = true
