@@ -6,7 +6,7 @@ resource "helm_release" "ebs_csi_driver" {
   chart      = "aws-ebs-csi-driver"
   namespace  = "kube-system"
   values = [
-    file("./module/helm-values/values-ebs-csi-driver.yaml")
+    file("${path.module}/helm-values/values-ebs-csi-driver.yaml")
   ]
 }
 

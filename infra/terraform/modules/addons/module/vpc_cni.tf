@@ -6,7 +6,7 @@ resource "helm_release" "vpc_cni" {
   version    = var.vpc_cni_version
   namespace  = "kube-system"
   values = [
-    templatefile("./module/helm-values/values-cni.yaml", {
+    templatefile("${path.module}/helm-values/values-cni.yaml", {
       region   = "${local.region}"
       sg_node  = "${local.sg_node}"
       subnet_1 = "${local.subnet_1}"

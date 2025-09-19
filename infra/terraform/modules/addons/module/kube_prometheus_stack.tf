@@ -7,7 +7,7 @@ resource "helm_release" "kube_prometheus_stack" {
   namespace        = "monitoring"
   create_namespace = true
   values = [
-    templatefile("./module/helm-values/values-prometheus-stack.yaml", {
+    templatefile("${path.module}/helm-values/values-prometheus-stack.yaml", {
       kube_prometheus_stack_grafana_url           = "${var.kube_prometheus_stack_grafana_url}"
       kube_prometheus_stack_grafana_ingress_class = "${var.kube_prometheus_stack_grafana_ingress_class}"
     })

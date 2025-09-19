@@ -6,7 +6,7 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   namespace  = "kube-system"
   values = [
-    templatefile("./module/helm-values/values_external_dns.yaml", {
+    templatefile("${path.module}/helm-values/values_external_dns.yaml", {
       external_dns_hosted_zone_id     = "${var.external_dns_hosted_zone_id}"
       external_dns_hosted_zone_domain = "${var.external_dns_hosted_zone_domain}"
     })

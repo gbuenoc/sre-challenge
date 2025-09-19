@@ -9,7 +9,7 @@ resource "helm_release" "ingress_gateway" {
   create_namespace = true
 
   values = [
-    templatefile("./module/helm-values/values-nginx.yaml", {
+    templatefile("${path.module}/helm-values/values-nginx.yaml", {
       SSL_CERT = "${var.certificate_arn}"
     })
   ]

@@ -7,7 +7,7 @@ resource "helm_release" "kube_dashboard" {
   namespace        = "kubernetes-dashboard"
   create_namespace = true
   values = [
-    templatefile("./module/helm-values/values-kube-dashboard.yaml", {})
+    templatefile("${path.module}/helm-values/values-kube-dashboard.yaml", {})
   ]
 }
 
