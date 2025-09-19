@@ -14,8 +14,8 @@ module "eks" {
   enable_cluster_creator_admin_permissions = var.enable_cluster_creator_admin_permissions
 
   vpc_id                   = data.aws_vpc.env_vpc.id
-  subnet_ids               = data.aws_subnets.private_subnet.ids
-  control_plane_subnet_ids = data.aws_subnets.private_subnet.ids
+  subnet_ids               = data.aws_subnets.private_subnets.ids
+  control_plane_subnet_ids = data.aws_subnets.private_subnets.ids
 
   fargate_profiles = {
     coredns = {
@@ -28,7 +28,7 @@ module "eks" {
           }
         }
       ]
-      subnets = data.aws_subnets.lab_private.ids
+      subnets = data.aws_subnets.private_subnets.ids
       tags = {
         Name = "eks-fargate-coredns"
       }
@@ -44,7 +44,7 @@ module "eks" {
           }
         }
       ]
-      subnets = data.aws_subnets.lab_private.ids
+      subnets = data.aws_subnets.private_subnets.ids
       tags = {
         Name = "eks-fargate-karpenter"
       }
