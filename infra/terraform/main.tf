@@ -25,4 +25,12 @@ module "ecr" {
 module "addons" {
   source      = "./modules/addons"
   environment = var.environment
+  region      = var.region
+  vpc_id = module.vpc.vpc_id
+  azs = var.azs
+  cluster_name     = module.eks.cluster_name
+  cluster_endpoint = module.eks.cluster_endpoint
+  cluster_oidc     = module.eks.cluster_oidc_issuer_url
+  private_subnet_ids = module.vpc.private_subnet_ids
+  node_security_group_id = module.eks.node_security_group_id
 }

@@ -13,9 +13,9 @@ module "eks" {
   # Optional: Adds the current caller identity as an administrator via cluster access entry
   enable_cluster_creator_admin_permissions = var.enable_cluster_creator_admin_permissions
 
-  vpc_id                   = data.aws_vpc.env_vpc.id
-  subnet_ids               = data.aws_subnets.private_subnets.ids
-  control_plane_subnet_ids = data.aws_subnets.private_subnets.ids
+  vpc_id                   = module.vpc.vpc_id
+  subnet_ids               = module.vpc.private_subnets
+  control_plane_subnet_ids = module.vpc.private_subnets
 
   fargate_profiles = {
     coredns = {
@@ -28,7 +28,7 @@ module "eks" {
           }
         }
       ]
-      subnets = data.aws_subnets.private_subnets.ids
+      subnets = module.vpc.private_subnets
       tags = {
         Name = "eks-fargate-coredns"
       }
@@ -44,7 +44,7 @@ module "eks" {
           }
         }
       ]
-      subnets = data.aws_subnets.private_subnets.ids
+      subnets = module.vpc.private_subnets
       tags = {
         Name = "eks-fargate-karpenter"
       }

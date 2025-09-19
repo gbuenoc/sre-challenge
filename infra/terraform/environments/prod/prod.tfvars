@@ -10,6 +10,6 @@ kubernetes_version     = "1.33"
 endpoint_public_access = true
 
 repositories = [
-  "foxbit-backend",
-  "foxbit-frontend"
+  "app-backend",
+  "app-frontend"
 ]

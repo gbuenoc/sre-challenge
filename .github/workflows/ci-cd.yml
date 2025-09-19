@@ -53,7 +53,7 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ./infra/terraform
-        run: terraform apply -var-file=./environments/${{ env.TERRAFORM_ENV }}/${{ env.TERRAFORM_ENV }}.tfvars -auto-approve
+        run: terraform apply -var-file=./environments/${{ env.TERRAFORM_ENV }}/${{ env.TERRAFORM_ENV }}.tfvars
 
       - name: Get Terraform outputs (ECR)
         id: outputs_ecr

@@ -54,5 +54,5 @@ resource "aws_route_table_association" "pods_assoc" {
   for_each = aws_subnet.subnets_pods
 
   subnet_id      = each.value.id
-  route_table_id = module.vpc.private_route_table_ids[tonumber(each.key)]
+  route_table_id = module.vpc.private_route_table_ids[0]
 }
